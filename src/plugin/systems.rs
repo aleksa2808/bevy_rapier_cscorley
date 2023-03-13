@@ -245,6 +245,18 @@ pub fn apply_collider_user_changes(
     }
 }
 
+fn fletcher16(data: &[u8]) -> u16 {
+    let mut sum1: u16 = 0;
+    let mut sum2: u16 = 0;
+
+    for byte in data {
+        sum1 = (sum1 + *byte as u16) % 255;
+        sum2 = (sum2 + sum1) % 255;
+    }
+
+    (sum2 << 8) | sum1
+}
+
 /// System responsible for applying changes the user made to a rigid-body-related component.
 pub fn apply_rigid_body_user_changes(
     mut context: ResMut<RapierContext>,
@@ -353,14 +365,46 @@ pub fn apply_rigid_body_user_changes(
                     }
                 }
                 _ => {
+                    log::info!("position: {:?}", rb.position());
+                    log::info!(
+                        "position checksum: {:?}",
+                        fletcher16(&bincode::serialize(rb.position()).unwrap())
+                    );
+                    log::info!("gt: {:?}", global_transform.compute_transform());
+                    log::info!(
+                        "gt bytes: {:?}",
+                        fletcher16(
+                            &bincode::serialize(&global_transform.compute_transform()).unwrap()
+                        )
+                    );
+                    log::info!(
+                        "transformed gt: {:?}",
+                        utils::transform_to_iso(&global_transform.compute_transform(), scale)
+                    );
+                    log::info!(
+                        "transformed gt bytes: {:?}",
+                        fletcher16(
+                            &bincode::serialize(&utils::transform_to_iso(
+                                &global_transform.compute_transform(),
+                                scale
+                            ))
+                            .unwrap()
+                        )
+                    );
                     if transform_changed(
                         &handle.0,
                         global_transform,
                         &context.last_body_transform_set,
                     ) {
+                        log::info!("HELLO MR ANDERSON");
                         rb.set_position(
                             utils::transform_to_iso(&global_transform.compute_transform(), scale),
                             true,
+                        );
+                        log::info!("after position: {:?}", rb.position());
+                        log::info!(
+                            "after position checksum: {:?}",
+                            fletcher16(&bincode::serialize(rb.position()).unwrap())
                         );
                         context
                             .last_body_transform_set
@@ -503,6 +547,13 @@ pub fn writeback_rigid_bodies(
             if let Some(handle) = context.entity2body.get(&entity).copied() {
                 if let Some(rb) = context.bodies.get(handle) {
                     let mut interpolated_pos = utils::iso_to_transform(rb.position(), scale);
+                    if rb.is_dynamic() {
+                        log::info!("writeback interpolated_pos: {:?}", interpolated_pos);
+                        log::info!(
+                            "writeback interpolated_pos checksum: {:?}",
+                            fletcher16(&bincode::serialize(&interpolated_pos).unwrap())
+                        );
+                    }
 
                     if let TimestepMode::Interpolated { dt, .. } = config.timestep_mode {
                         if let Some(interpolation) = interpolation.as_deref_mut() {
@@ -567,6 +618,59 @@ pub fn writeback_rigid_bodies(
                             //       despite rounding errors.
                             let new_global_transform =
                                 parent_global_transform.mul_transform(*transform);
+
+                            if rb.is_dynamic() {
+                                log::info!("writeback transform: {:?}", *transform);
+                                log::info!(
+                                    "writeback transform checksum: {:?}",
+                                    fletcher16(&bincode::serialize(transform.as_ref()).unwrap())
+                                );
+
+                                log::info!(
+                                    "writeback parent_global_transform: {:?}",
+                                    *parent_global_transform
+                                );
+                                log::info!(
+                                    "writeback parent_global_transform checksum: {:?}",
+                                    fletcher16(
+                                        &bincode::serialize(parent_global_transform).unwrap()
+                                    )
+                                );
+
+                                log::info!(
+                                    "writeback inverse_parent_rotation: {:?}",
+                                    inverse_parent_rotation
+                                );
+                                log::info!(
+                                    "writeback inverse_parent_rotation checksum: {:?}",
+                                    fletcher16(
+                                        &bincode::serialize(&inverse_parent_rotation).unwrap()
+                                    )
+                                );
+
+                                log::info!(
+                                    "writeback inverse_parent_translation: {:?}",
+                                    inverse_parent_translation
+                                );
+                                log::info!(
+                                    "writeback inverse_parent_translation checksum: {:?}",
+                                    fletcher16(
+                                        &bincode::serialize(&inverse_parent_translation).unwrap()
+                                    )
+                                );
+
+                                log::info!("writeback new_rotation: {:?}", new_rotation);
+                                log::info!(
+                                    "writeback new_rotation checksum: {:?}",
+                                    fletcher16(&bincode::serialize(&new_rotation).unwrap())
+                                );
+
+                                log::info!("writeback new_translation: {:?}", new_translation);
+                                log::info!(
+                                    "writeback new_translation checksum: {:?}",
+                                    fletcher16(&bincode::serialize(&new_translation).unwrap())
+                                );
+                            }
 
                             context
                                 .last_body_transform_set
