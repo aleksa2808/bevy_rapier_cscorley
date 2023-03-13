@@ -553,13 +553,25 @@ pub fn writeback_rigid_bodies(
                             fletcher16(&bincode::serialize(rb.position()).unwrap())
                         );
 
+                        let angle = rb.position().rotation.angle();
+                        log::info!("writeback angle: {:?}", angle);
                         log::info!(
-                            "writeback rb.position().rotation.angle(): {:?}",
-                            rb.position().rotation.angle()
+                            "writeback angle bytes: {:?}",
+                            &bincode::serialize(&angle).unwrap()
                         );
+
+                        let angle15 = angle * 0.5;
+                        log::info!("writeback angle15: {:?}", angle15);
                         log::info!(
-                            "writeback rb.position().rotation.angle() bytes: {:?}",
-                            &bincode::serialize(&rb.position().rotation.angle()).unwrap()
+                            "writeback angle15 bytes: {:?}",
+                            &bincode::serialize(&angle15).unwrap()
+                        );
+
+                        let angle15sincos = angle15.sin_cos();
+                        log::info!("writeback angle15sincos: {:?}", angle15sincos);
+                        log::info!(
+                            "writeback angle15sincos bytes: {:?}",
+                            &bincode::serialize(&angle15sincos).unwrap()
                         );
                     }
                     let mut interpolated_pos = utils::iso_to_transform(rb.position(), scale);
