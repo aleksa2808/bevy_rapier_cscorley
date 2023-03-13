@@ -580,6 +580,20 @@ pub fn writeback_rigid_bodies(
                             "writeback angle15cos bytes: {:?}",
                             &bincode::serialize(&angle15cos).unwrap()
                         );
+
+                        let angle15sincostuple = (angle15sin, angle15cos);
+                        log::info!("writeback angle15sincostuple: {:?}", angle15sincostuple);
+                        log::info!(
+                            "writeback angle15sincostuple bytes: {:?}",
+                            &bincode::serialize(&angle15sincostuple).unwrap()
+                        );
+
+                        let angle15sincos = angle15.sin_cos();
+                        log::info!("writeback angle15sincos: {:?}", angle15sincos);
+                        log::info!(
+                            "writeback angle15sincos bytes: {:?}",
+                            &bincode::serialize(&angle15sincos).unwrap()
+                        );
                     }
                     let mut interpolated_pos = utils::iso_to_transform(rb.position(), scale);
                     if rb.is_dynamic() {
