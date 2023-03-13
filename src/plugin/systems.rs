@@ -546,6 +546,13 @@ pub fn writeback_rigid_bodies(
             // by physics (for example because they are sleeping).
             if let Some(handle) = context.entity2body.get(&entity).copied() {
                 if let Some(rb) = context.bodies.get(handle) {
+                    if rb.is_dynamic() {
+                        log::info!("writeback rb.position(): {:?}", rb.position());
+                        log::info!(
+                            "writeback rb.position() checksum: {:?}",
+                            fletcher16(&bincode::serialize(rb.position()).unwrap())
+                        );
+                    }
                     let mut interpolated_pos = utils::iso_to_transform(rb.position(), scale);
                     if rb.is_dynamic() {
                         log::info!("writeback interpolated_pos: {:?}", interpolated_pos);
@@ -676,6 +683,14 @@ pub fn writeback_rigid_bodies(
                                 .last_body_transform_set
                                 .insert(handle, new_global_transform);
                         } else {
+                            if rb.is_dynamic() {
+                                log::info!("writeback transform: {:?}", *transform);
+                                log::info!(
+                                    "writeback transform checksum: {:?}",
+                                    fletcher16(&bincode::serialize(transform.as_ref()).unwrap())
+                                );
+                            }
+
                             // In 2D, preserve the transform `z` component that may have been set by the user
                             #[cfg(feature = "dim2")]
                             {
