@@ -552,6 +552,15 @@ pub fn writeback_rigid_bodies(
                             "writeback rb.position() checksum: {:?}",
                             fletcher16(&bincode::serialize(rb.position()).unwrap())
                         );
+
+                        log::info!(
+                            "writeback rb.position().rotation.angle(): {:?}",
+                            rb.position().rotation.angle()
+                        );
+                        log::info!(
+                            "writeback rb.position().rotation.angle() bytes: {:?}",
+                            &bincode::serialize(&rb.position().rotation.angle()).unwrap()
+                        );
                     }
                     let mut interpolated_pos = utils::iso_to_transform(rb.position(), scale);
                     if rb.is_dynamic() {
