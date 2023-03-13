@@ -567,11 +567,18 @@ pub fn writeback_rigid_bodies(
                             &bincode::serialize(&angle15).unwrap()
                         );
 
-                        let angle15sincos = angle15.sin_cos();
-                        log::info!("writeback angle15sincos: {:?}", angle15sincos);
+                        let angle15sin = angle15.sin();
+                        log::info!("writeback angle15sin: {:?}", angle15sin);
                         log::info!(
-                            "writeback angle15sincos bytes: {:?}",
-                            &bincode::serialize(&angle15sincos).unwrap()
+                            "writeback angle15sin bytes: {:?}",
+                            &bincode::serialize(&angle15sin).unwrap()
+                        );
+
+                        let angle15cos = angle15.cos();
+                        log::info!("writeback angle15cos: {:?}", angle15cos);
+                        log::info!(
+                            "writeback angle15cos bytes: {:?}",
+                            &bincode::serialize(&angle15cos).unwrap()
                         );
                     }
                     let mut interpolated_pos = utils::iso_to_transform(rb.position(), scale);
