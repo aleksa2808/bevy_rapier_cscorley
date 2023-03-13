@@ -555,10 +555,22 @@ pub fn writeback_rigid_bodies(
                     }
                     let mut interpolated_pos = utils::iso_to_transform(rb.position(), scale);
                     if rb.is_dynamic() {
-                        log::info!("writeback interpolated_pos: {:?}", interpolated_pos);
                         log::info!(
-                            "writeback interpolated_pos checksum: {:?}",
-                            fletcher16(&bincode::serialize(&interpolated_pos).unwrap())
+                            "writeback interpolated_pos.translation: {:?}",
+                            interpolated_pos.translation
+                        );
+                        log::info!(
+                            "writeback interpolated_pos.translation checksum: {:?}",
+                            fletcher16(&bincode::serialize(&interpolated_pos.translation).unwrap())
+                        );
+
+                        log::info!(
+                            "writeback interpolated_pos.rotation: {:?}",
+                            interpolated_pos.rotation
+                        );
+                        log::info!(
+                            "writeback interpolated_pos.rotation checksum: {:?}",
+                            fletcher16(&bincode::serialize(&interpolated_pos.rotation).unwrap())
                         );
                     }
 
